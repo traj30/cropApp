@@ -1,4 +1,4 @@
-package com.example.usuario.myapplication;
+package net.simplifiedcoding.androidcameraapp;
 
 import android.app.Application;
 import android.test.ApplicationTestCase;

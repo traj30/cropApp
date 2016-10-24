@@ -1,24 +1,33 @@
-package com.example.usuario.myapplication;
+package seniorDesign;
 
+import android.app.Activity;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.provider.MediaStore;
-import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.Button;
 import android.widget.ImageView;
 
-public class MainActivity extends AppCompatActivity {
+import net.simplifiedcoding.androidcameraapp.R;
+
+
+public class CropPicture extends Activity {
     Button BtDownload;
     ImageView IvImage;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_main);
+        setContentView(R.layout.activity_crop);
 
         BtDownload = (Button)findViewById(R.id.BtDownload);
         IvImage = (ImageView)findViewById(R.id.IvImage);
+
+        // Get the Intent that called for this Activity to open
+        Intent activityThatCalled = getIntent();
+        // Get the data that was sent
+        Bundle callingBundle = activityThatCalled.getExtras();
 
         BtDownload.setOnClickListener(new View.OnClickListener() {
 
@@ -33,6 +42,15 @@ public class MainActivity extends AppCompatActivity {
                 imageDownload.putExtra("outputY", 200);
                 imageDownload.putExtra("return-data", true);
                 startActivityForResult(imageDownload, 2);
+
+                Intent goingBack = new Intent();
+                // Sends data back to the parent and can use RESULT_CANCELED, RESULT_OK, or any
+                // custom values starting at RESULT_FIRST_USER. RESULT_CANCELED is sent if
+                // this Activity crashes
+                setResult(RESULT_OK, goingBack);
+
+                // Close this Activity
+                finish();
             }
         });
     }
