@@ -11,6 +11,7 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Typeface;
 import android.net.Uri;
+import android.os.Environment;
 import android.provider.MediaStore;
 import android.support.v7.app.ActionBarActivity;
 import android.os.Bundle;
@@ -34,7 +35,7 @@ import static net.simplifiedcoding.androidcameraapp.R.id.image;
 
 
 public class MainActivity extends ActionBarActivity {//implements View.OnClickListener {
-
+    private static final String TEMP_PHOTO_FILE = "temporary_holder.jpg";
     private Button btnCamera;
     private Button btnCrop;
     private ImageView capturedImage;
@@ -98,42 +99,91 @@ public class MainActivity extends ActionBarActivity {//implements View.OnClickLi
     }
 
     public void cropPicture(){
-        Intent getNameScreenIntent = new Intent(this, CropPicture.class);
+        /*Intent getNameScreenIntent = new Intent(this, CropPicture.class);
         Bundle myExtras = new Bundle();
         //myExtras.putString("callingActivity", "MainBitchinActivity");
         //getNameScreenIntent.putExtras(myExtras);
-        final int result = 1;
-        startActivityForResult(getNameScreenIntent, result);
-    }
+        final int result = 2;
+        startActivityForResult(getNameScreenIntent, result);*/
+        /*Intent imageDownload = new Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
+        System.out.println("O HAYOOO");
+        imageDownload.putExtra("crop", "true");
+        imageDownload.putExtra("aspectX", 1);
+        imageDownload.putExtra("aspectY", 1);
+        imageDownload.putExtra("outputX", 200);
+        imageDownload.putExtra("outputY", 200);
+        imageDownload.putExtra("return-data", true);
+        startActivityForResult(imageDownload, 2);*/
 
+        Intent photoPickerIntent = new Intent(Intent.ACTION_PICK,
+                android.provider.MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
+        photoPickerIntent.putExtra("crop", "true");
+        Uri uriSavedImage = Uri.fromFile(new File("/sdcard/test.png"));
+        CropPicture.currentImage++;
+        photoPickerIntent.putExtra(MediaStore.EXTRA_OUTPUT, uriSavedImage);
+        startActivityForResult(photoPickerIntent, 2);
+        try {
+//                Uri imageUri = data.getData();
+//                Bitmap bitmap = MediaStore.Images.Media.getBitmap(this.getContentResolver(), uriSavedImage);
+//                int a = getRGB(bitmap);
+            BitmapFactory.Options bmOptions = new BitmapFactory.Options();
+            Bitmap bitmap = BitmapFactory.decodeFile("/sdcard/test.png", bmOptions);
+            capturedImage.setImageBitmap(bitmap);
+
+            Log.d("hello", "works" + getRGB(bitmap));
+//                Log.d("hellocatch (IOException e){ // catch all IOExceptions not handled by previous catch blocks\n" +
+//                        "//            System.out.println(\"General I/O exception: \" + e.getMessage());\n" +
+//                        "//            //e.printStackTrace();\n" +
+//                        "//            }", "mauricio");
+        } catch (Exception e) {
+//                System.out.println(e.getMessage)
+        }
+        //Intent goingBack = new Intent();
+        // Sends data back to the parent and can use RESULT_CANCELED, RESULT_OK, or any
+        // custom values starting at RESULT_FIRST_USER. RESULT_CANCELED is sent if
+        // this Activity crashes
+        //setResult(RESULT_OK, goingBack);
+
+        /*Uri uriSavedImage = Uri.fromFile(new File("/sdcard/crop"+currentImage+".png"));
+        currentImage++;
+        goingBack.putExtra(MediaStore.EXTRA_OUTPUT, uriSavedImage);*/
+
+        // Close this Activity
+        //finish();
+    }
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         // TODO Auto-generated method stub
         super.onActivityResult(requestCode, resultCode, data);
         //if((resultCode == RESULT_OK) && (requestCode == CAMERA_PIC_REQUEST)) {
         if(resultCode == RESULT_OK) {
+            if(requestCode == 1) {
 //            Bitmap bp = (Bitmap) data.getExtras().get("data");
 //            capturedImage.setImageBitmap(bp);
 //            Log.d("hello", "" + getRGB(bp));
-            Uri uriSavedImage = Uri.fromFile(new File("/sdcard/test.png"));
+                Uri uriSavedImage = Uri.fromFile(new File("/sdcard/test.png"));
 
-           //Uri tempUri = getImageUri(getApplicationContext(),bp);
-            try {
+                //Uri tempUri = getImageUri(getApplicationContext(),bp);
+                try {
 //                Uri imageUri = data.getData();
 //                Bitmap bitmap = MediaStore.Images.Media.getBitmap(this.getContentResolver(), uriSavedImage);
 //                int a = getRGB(bitmap);
-                BitmapFactory.Options bmOptions = new BitmapFactory.Options();
-                Bitmap bitmap = BitmapFactory.decodeFile("/sdcard/test.png", bmOptions);
-                capturedImage.setImageBitmap(bitmap);
+                    BitmapFactory.Options bmOptions = new BitmapFactory.Options();
+                    Bitmap bitmap = BitmapFactory.decodeFile("/sdcard/test.png", bmOptions);
+                    capturedImage.setImageBitmap(bitmap);
 
-                Log.d("hello", "works" + getRGB(bitmap));
+                    Log.d("hello", "works" + getRGB(bitmap));
 //                Log.d("hellocatch (IOException e){ // catch all IOExceptions not handled by previous catch blocks\n" +
 //                        "//            System.out.println(\"General I/O exception: \" + e.getMessage());\n" +
 //                        "//            //e.printStackTrace();\n" +
 //                        "//            }", "mauricio");
-            }
-            catch (Exception e){
+                } catch (Exception e) {
 //                System.out.println(e.getMessage)
+                }
+            }
+            else if(resultCode == 2){
+
+                System.out.println("\n:::::::::::::::aksjfdklasjdfl;j");
             }
 
             /*
