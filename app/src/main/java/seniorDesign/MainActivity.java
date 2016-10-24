@@ -187,11 +187,11 @@ public class MainActivity extends ActionBarActivity {//implements View.OnClickLi
         }*/
 
         //@Override
-        public int getRGB(Bitmap image) {
+        public int [] getRGB(Bitmap image) {
 
             if (null == image) {
                 Log.d("hello","NOOOOOOOOOOOOOOO");
-                return android.graphics.Color.TRANSPARENT;
+                return null;
             } else {
 
                 int optI = 4;
@@ -229,10 +229,215 @@ public class MainActivity extends ActionBarActivity {//implements View.OnClickLi
                 G_value_display.setText("Green: "+green);
                 B_value_display.setText("Blue: "+blue);
 
-                int RGB_value = android.graphics.Color.rgb(red, green, blue);
+                //int RGB_value = android.graphics.Color.rgb(red, green, blue);
 
-                return RGB_value;
+                int [] rgbVals = {red, green, blue};
+
+                return rgbVals;
             }
         }
+
+
+    public double calibrateCurve(){         //ADD (double blueRGBVals[], double blueRGBVals[], double whiteVals[])
+
+        //THIS SHOULD BE CALLED AFTER ALL THREE CROPS ARE OBTAINED, SO CALIBRATION UNDERNEATH CAN CONTINUE
+
+
+        //RGB VALUES ARE INPUT FROM getRGB
+
+        double [] blueRGBVals = {0.0, 1.0, 2.0};
+
+        double [] purpleRGBVals = {0.0, 1.0, 2.0};
+
+        double [] whiteVals = {0.0, 1.0, 2.0};
+
+        int iter = 100;
+
+        double total = 0;
+
+        for(int i = 0; i<6; i++) {
+            blueRGBVals[i] = 255 - whiteVals[i] + blueRGBVals[i];
+            purpleRGBVals[i] = 255 - whiteVals[i] + purpleRGBVals[i];
+        }
+
+        double [] BG = {newtraphBlueR(iter,blueRGBVals),newtraphBlueG(iter,blueRGBVals),newtraphBlueB(iter,blueRGBVals),
+                newtraphPurpleR(iter,purpleRGBVals),newtraphPurpleG(iter,purpleRGBVals),newtraphPurpleB(iter,purpleRGBVals)};
+
+        for(int i = 0; i<6; i++) {
+            total += BG[i];
+        }
+
+        return total/6;
+
+    }
+
+    public static double sigR(double x, double t) {
+        return 78.94 + (208.2/(1+Math.exp(-1*((x-161.7)/-91.09)))) - t;
+    }
+
+    public static double sigG(double x, double t) {
+        return 71.86 + (205.3/(1+Math.exp(-1*((x-112)/-91.48)))) - t;
+    }
+
+    public static double sigB(double x, double t) {
+        return 109.7 +(121.9/(1+Math.exp(-1*((x-163.6)/-62.29)))) - t;
+    }
+
+    public static double dsigR(double x) {
+        return 208.2*Math.exp((161.7+x)/-91.09)/(-91.09*(Math.exp(161.7/-91.09) + Math.exp(x/-91.09))*(Math.exp(161.7/-91.09) + Math.exp(x/-91.09)));
+    }
+
+    public static double dsigG(double x) {
+        return 205.3*Math.exp((112+x)/-91.48)/(-91.48*(Math.exp(112/-91.48) + Math.exp(x/-91.48))*(Math.exp(112/-91.48) + Math.exp(x/-91.48)));
+    }
+
+    public static double dsigB(double x) {
+        return 121.9*Math.exp((163.6+x)/-62.29)/(-62.29*(Math.exp(163.6/-62.29) + Math.exp(x/-62.29))*(Math.exp(163.6/-62.29) + Math.exp(x/-62.29)));
+    }
+
+    public static double expR(double x, double t) {
+        return 191.1*Math.exp(-0.009766*x) + 62.24*Math.exp(-0.0004514*x) - t;
+    }
+
+    public static double expG(double x, double t) {
+        return 123.8*Math.exp(-0.005929*x) + 127.9*Math.exp(-0.000418*x) - t;
+    }
+
+    public static double expB(double x, double t) {
+        return 80.97*Math.exp(-0.004578*x) + 156*Math.exp(-0.0003154*x) - t;
+    }
+
+    public static double dexpR(double x) {
+        return 191.1*-0.009766*Math.exp(-0.009766*x) + 62.24*-0.0004514*Math.exp(-0.0004514*x);
+    }
+
+    public static double dexpG(double x) {
+        return 123.8*-0.005929*Math.exp(-0.005929*x) + 127.9*-0.000418*Math.exp(-0.000418*x);
+    }
+
+    public static double dexpB(double x) {
+        return 80.97*-0.004578*Math.exp(-0.004578*x) + 156*-0.0003154*Math.exp(-0.0003154*x);
+    }
+
+    public double newtraphBlueR(int iter, double [] vals){
+        double xrold = 0;
+        double xr = 0;
+        double ea = 0;
+        double es = 0;
+        double maxit = 0;
+        while(true) {
+            xrold = xr;
+            xr = xr - expR(xr, vals[0])/dexpR(xr) ;
+            iter = iter + 1;
+            if (xr != 0){
+                ea = Math.abs((xr - xrold)/xr) * 100;
+            }
+            if (ea <= es || iter >= maxit){
+                break;
+            }
+        }
+        return xr;
+    }
+
+    public double newtraphBlueG(int iter, double [] vals){
+        double xrold = 0;
+        double xr = 0;
+        double ea = 0;
+        double es = 0;
+        double maxit = 0;
+        while(true) {
+            xrold = xr;
+            xr = xr - expG(xr, vals[1])/dexpG(xr) ;
+            iter = iter + 1;
+            if (xr != 0){
+                ea = Math.abs((xr - xrold)/xr) * 100;
+            }
+            if (ea <= es || iter >= maxit){
+                break;
+            }
+        }
+        return xr;
+    }
+
+    public double newtraphBlueB(int iter, double [] vals){
+        double xrold = 0;
+        double xr = 0;
+        double ea = 0;
+        double es = 0;
+        double maxit = 0;
+        while(true) {
+            xrold = xr;
+            xr = xr - expB(xr, vals[2])/dexpB(xr) ;
+            iter = iter + 1;
+            if (xr != 0){
+                ea = Math.abs((xr - xrold)/xr) * 100;
+            }
+            if (ea <= es || iter >= maxit){
+                break;
+            }
+        }
+        return xr;
+    }
+
+    public double newtraphPurpleR(int iter, double [] vals){
+        double xrold = 0;
+        double xr = 0;
+        double ea = 0;
+        double es = 0;
+        double maxit = 0;
+        while(true) {
+            xrold = xr;
+            xr = xr - sigR(xr, vals[0])/dsigR(xr) ;
+            iter = iter + 1;
+            if (xr != 0){
+                ea = Math.abs((xr - xrold)/xr) * 100;
+            }
+            if (ea <= es || iter >= maxit){
+                break;
+            }
+        }
+        return xr;
+    }
+
+    public double newtraphPurpleG(int iter, double [] vals){
+        double xrold = 0;
+        double xr = 0;
+        double ea = 0;
+        double es = 0;
+        double maxit = 0;
+        while(true) {
+            xrold = xr;
+            xr = xr - sigG(xr, vals[1])/dsigG(xr) ;
+            iter = iter + 1;
+            if (xr != 0){
+                ea = Math.abs((xr - xrold)/xr) * 100;
+            }
+            if (ea <= es || iter >= maxit){
+                break;
+            }
+        }
+        return xr;
+    }
+
+
+    public double newtraphPurpleB(int iter, double [] vals){
+        double xrold = 0;
+        double xr = 0;
+        double ea = 0;
+        double es = 0;
+        double maxit = 0;
+        while(true) {
+            xrold = xr;
+            xr = xr - sigB(xr, vals[2])/dsigB(xr) ;
+            iter = iter + 1;
+            if (xr != 0){
+                ea = Math.abs((xr - xrold)/xr) * 100;
+            }
+            if (ea <= es || iter >= maxit){
+                break;
+            }
+        }
+        return xr;
+    }
 
 }
